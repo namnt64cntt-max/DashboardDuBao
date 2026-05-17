@@ -1,0 +1,117 @@
+﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<DashboardNTU.Models.Entities.KetQuaHocTap>
+
+@{
+    // Khai báo lại stats để fix lỗi "not exist"
+    var stats = ViewBag.Stats as DashboardNTU.Models.ViewModels.DashboardVM ?? new DashboardNTU.Models.ViewModels.DashboardVM();
+}
+
+<h2>Tổng Quan Dữ Liệu Thống Kê Sinh Viên</h2>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3 mb-3 shadow-sm">
+                <h6>Tổng Sinh Viên</h6>
+                <h3>@stats.TongSV</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3 mb-3 shadow-sm">
+                <h6>GPA Trung Bình</h6>
+                <h3>@stats.GpaTrungBinh.ToString("0.00")</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white p-3 mb-3 shadow-sm">
+                <h6>Tỷ lệ Đậu</h6>
+                <h3>@stats.PhanTramDau.ToString("0.0")%</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white p-3 mb-3 shadow-sm">
+                <h6>Tỷ lệ Rớt</h6>
+                <h3>@stats.PhanTramRot.ToString("0.0")%</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <h5 class="text-center">Biểu đồ Tỷ lệ Đậu/Rớt</h5>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card p-3 shadow-sm">
+                <div class="d-flex justify-content-between mb-3">
+                    <h5>Bảng điểm công khai</h5>
+                    <form asp-action="Index" method="get" class="d-flex">
+                        <input type="text" name="searchString" value="@Context.Request.Query["searchString"]" class="form-control form-control-sm me-2" placeholder="Tìm MSSV hoặc Tên...">
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Lọc</button>
+                    </form>
+                </div>
+
+                <table class="table table-striped table-hover small">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>MSSV</th>
+                            <th>Họ Tên</th>
+                            <th>Môn Học</th>
+                            <th>Điểm Tổng Kết</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.IdStudent</td>
+                                <td>@item.SinhVien?.HoTen</td>
+                                <td>@item.LopHocPhan?.MonHoc?.TenMon</td>
+                                <td><strong>@item.DiemTongKet</strong></td>
+                                <td>
+                                    <span class="badge @(item.TrangThaiThucTe == "Đậu" ? "bg-success" : "bg-danger")">
+                                        @item.TrangThaiThucTe
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="d-flex justify-content-center">
+                    @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = Context.Request.Query["searchString"] }),
+                             new PagedListRenderOptions
+                    {
+                        LiElementClasses = new[] { "page-item" },
+                        PageClasses = new[] { "page-link" }
+                    })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('statusChart');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: @Html.Raw(Json.Serialize(stats.ChartLabels)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(stats.ChartData)),
+                    backgroundColor: ['#198754', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    </script>
+}

@@ -1,0 +1,130 @@
+﻿@model IEnumerable<DashboardNTU.Models.Entities.DuBaoRuiRo>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="container-fluid mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h4 class="text-primary mb-0"><i class="fas fa-robot me-2"></i>Dashboard AI NTU - Dự báo rủi ro</h4>
+
+            <div class="d-flex align-items-center">
+                <button id="btnRunAI" class="btn btn-primary me-3">
+                    <i class="fas fa-brain me-1"></i> Cập nhật dự báo mới
+                </button>
+
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="filterStatus('')">Tất cả</button>
+                    <button class="btn btn-outline-success btn-sm" onclick="filterStatus('AN TOÀN')">An toàn</button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="filterStatus('NGUY CƠ')">Nguy cơ</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="predictionTable" class="table table-hover align-middle border">
+                <thead class="table-light">
+                    <tr>
+                        <th>MSSV</th>
+                        <th>Mã Lớp Học Phần</th>
+                        <th style="width: 200px;">Xác suất rớt</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th>Lý do hệ thống</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold text-dark">@item.IdStudent</td>
+                            <td><span class="badge bg-light text-dark border">@item.MaLhp</span></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 small fw-bold">@item.XacSuatTruot%</span>
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar @(item.XacSuatTruot >= 70 ? "bg-danger" : "bg-success")"
+                                             role="progressbar" style="width: @item.XacSuatTruot%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill @(item.NhanDuBao == "Nguy co" ? "bg-danger" : "bg-success")">
+                                    @(item.NhanDuBao == "Nguy co" ? "NGUY CƠ" : "AN TOÀN")
+                                </span>
+                            </td>
+                            <td class="text-muted small" style="max-width: 300px;">@item.LyDoChiTiet</td>
+                            <td class="text-center">
+                                <a href="@Url.Action("Details", "Prediction", new { id = item.IdPrediction })" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-search-plus"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="aiLoadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-grow text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+                <h5 class="fw-bold">AI đang thực hiện tính toán...</h5>
+                <p class="text-muted">Quá trình này có thể mất 10-20 giây cho 115,000 dòng dữ liệu.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        var table;
+        $(document).ready(function () {
+            // Khởi tạo DataTable tối ưu
+            table = $('#predictionTable').DataTable({
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json" },
+                "order": [[2, "desc"]]
+            });
+
+            // Xử lý nút bấm cập nhật AI
+            $('#btnRunAI').on('click', function () {
+                const myModal = new bootstrap.Modal(document.getElementById('aiLoadingModal'));
+                myModal.show();
+
+                $.ajax({
+                    url: '@Url.Action("RunAIPrediction", "Prediction")',
+                    type: 'POST',
+                    success: function (res) {
+                        myModal.hide();
+                        if (res.success) {
+                            Swal.fire('Thành công', res.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Lỗi AI', res.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        myModal.hide();
+                        Swal.fire('Thất bại', 'Không thể kết nối tới Controller hoặc script Python bị lỗi.', 'error');
+                    }
+                });
+            });
+        });
+
+        function filterStatus(status) {
+            table.column(3).search(status).draw();
+        }
+    </script>
+}

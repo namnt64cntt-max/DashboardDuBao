@@ -1,0 +1,50 @@
+﻿@model IEnumerable<DashboardNTU.Models.Entities.SinhVien>
+
+<div class="container-fluid py-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">QUẢN LÝ SINH VIÊN</h5>
+            <form method="get" class="d-flex gap-2">
+                <select name="maLop" class="form-select form-select-sm" style="width: 200px;">
+                    <option value="">-- Tất cả các lớp --</option>
+                    @foreach (var lop in ViewBag.LopList)
+                    {
+                        <option value="@lop.MaLop">@lop.TenLop</option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">Lọc</button>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Giới tính</th>
+                        <th>Quê quán</th>
+                        <th>Ngành</th>
+                        <th>Lớp</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.IdStudent</td>
+                            <td>@item.HoTen</td>
+                            <td>@item.GioiTinh</td>
+                            <td>@item.QueQuan</td>
+                            <td>@item.LopSinhVien?.ChuyenNganh?.TenNganh</td>
+                            <td>@item.MaLop</td>
+                            <td class="text-center">
+                                <a href="@Url.Action("Details", new { id = item.IdStudent })" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

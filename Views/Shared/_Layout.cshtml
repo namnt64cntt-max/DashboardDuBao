@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Trường Đại học Nha Trang</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* Màu xanh thương hiệu NTU như trong ảnh 9 */
+        .ntu-header {
+            background-color: #005689;
+            color: white;
+            padding: 15px 0;
+        }
+
+        .ntu-nav {
+            background-color: #337ab7;
+        }
+
+        .nav-link {
+            color: white !important;
+            font-weight: 500;
+        }
+
+            .nav-link:hover {
+                background-color: rgba(255,255,255,0.1);
+            }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="ntu-header">
+            <div class="container d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="/images/ntuu1.png" alt="Logo NTU" style="height: 60px; margin-right: 15px;" />
+                    <div>
+                        <h4 class="mb-0 text-uppercase">Trường Đại học Nha Trang</h4>
+                        <small>HỆ THỐNG TÍCH HỢP THÔNG TIN</small>
+                    </div>
+                </div>
+                <h4 class="mb-0">Kết quả học tập sinh viên</h4>
+            </div>
+        </div>
+
+        <nav class="ntu-nav navbar navbar-expand-sm navbar-toggleable-sm mb-3">
+            <div class="container">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Trang chủ</a>
+                        </li>
+                        @* <li class="nav-item"> *@
+                        @*     <a class="nav-link" asp-controller="Dashboard" asp-action="Analysis">Lop ki</a> *@
+                        @* </li> *@
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="HocTap" asp-action="Index">Ket Qua Theo hoc ky</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Prediction" asp-action="List">Cảnh báo (AI)</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="SinhVien" asp-action="Index">Thông Tin Sinh viên</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted text-center py-3">
+        <div class="container">
+            &copy; 2026 - Chuyên đề tốt nghiệp - Đại học Nha Trang
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @* Quan trọng: Dòng này sửa lỗi 'Scripts section not rendered' của bạn *@
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

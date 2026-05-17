@@ -1,0 +1,162 @@
+﻿@model IEnumerable<DashboardNTU.Models.Entities.KetQuaHocTap>
+
+<h2>Phân Tích Kết Quả Theo Học Kỳ Của Mỗi Sinh Viên</h2>
+<div class="container-fluid py-4">
+    <div class="card shadow-sm mb-4 border-0 bg-light">
+        <div class="card-body py-3">
+            <form method="get" class="row g-3 align-items-center justify-content-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white border-primary">MSSV</span>
+                        <input type="text" name="searchString" class="form-control border-primary"
+                               placeholder="Nhập mã sinh viên cần phân tích..." value="@Context.Request.Query["searchString"]">
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">PHÂN TÍCH DỮ LIỆU</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 fw-bold text-primary border-bottom">
+                    <i class="bi bi-graph-up-arrow"></i> @ViewBag.ChartTitle
+                </div>
+                <div class="card-body" style="height: 380px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 fw-bold text-danger border-bottom">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Top 5 môn học rớt nhiều nhất (Kèm GV)
+                </div>
+                <div class="card-body" style="height: 380px;">
+                    <canvas id="riskBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 fw-bold text-uppercase small">Chi tiết kết quả học tập hệ thống (30% : 30% : 40%)</h6>
+            <span class="badge bg-secondary">Dữ liệu hiển thị: 50 dòng</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-center small fw-bold">
+                        <tr>
+                            <th>MSSV</th>
+                            <th class="text-start">Họ tên</th>
+                            <th class="text-start">Học phần</th>
+                            <th>Giảng viên</th>
+                            <th style="width: 100px;">Chuyên cần</th>
+                            <th style="width: 100px;">Giữa kỳ</th>
+                            <th style="width: 100px;">Cuối kỳ</th>
+                            <th style="width: 80px;">Điểm tổng kết</th>
+                            <th>Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="text-center">
+                                <td class="fw-bold">@item.IdStudent</td>
+                                <td class="text-start">@(item.SinhVien?.HoTen ?? "N/A")</td>
+                                <td class="text-start">
+                                    <div class="fw-bold">@item.LopHocPhan?.MonHoc?.TenMon</div>
+                                    <div class="text-muted small">Mã lớp: @item.LopHocPhan?.MaLhp</div>
+                                </td>
+                                <td class="text-muted small">@item.LopHocPhan?.GiangVien</td>
+                                
+                                <td class="text-secondary">@item.DiemChuyenCan</td>
+                                <td class="text-secondary">@item.DiemGiuaKy</td>
+                                <td class="text-secondary">@item.DiemCuoiKy</td>
+                                
+                                <td class="fw-bold text-primary">@item.DiemTongKet</td>
+                                <td>
+                                    <span class="badge @(item.TrangThaiThucTe == "Đậu" ? "bg-success" : "bg-danger") px-3">
+                                        @item.TrangThaiThucTe
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Biểu đồ Xu hướng GPA
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(ViewBag.TrendLabels)),
+                    datasets: [{
+                        label: 'GPA trung bình',
+                        data: @Html.Raw(Json.Serialize(ViewBag.TrendValues)),
+                        borderColor: '#f1c40f',
+                        backgroundColor: 'rgba(241, 196, 15, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#f1c40f',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 10, 
+                            ticks: { stepSize: 1 },
+                            title: { display: true, text: 'Thang điểm 10' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+
+            // 2. Biểu đồ Top môn học rủi ro (Ngang)
+            new Chart(document.getElementById('riskBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(ViewBag.RiskLabels)),
+                    datasets: [{
+                        label: 'Số lượt rớt',
+                        data: @Html.Raw(Json.Serialize(ViewBag.RiskValues)),
+                        backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, title: { display: true, text: 'Số lượng sinh viên' } }
+                    }
+                }
+            });
+        });
+    </script>
+}

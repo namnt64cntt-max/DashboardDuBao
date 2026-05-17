@@ -1,0 +1,106 @@
+﻿@using DashboardNTU.Models.Entities
+@model SinhVien
+
+@{
+    var danhSachDiemRL = ViewBag.DiemRenLuyen as List<DiemRenLuyen> ?? new List<DiemRenLuyen>();
+    var tongTinChi = ViewBag.TongTinChi ?? 0;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white fw-bold">Thông tin sinh viên</div>
+                <div class="card-body">
+                    <h4 class="fw-bold">@Model.HoTen</h4>
+                    <p class="mb-1">MSSV: <strong>@Model.IdStudent</strong></p>
+                    <p class="mb-1">Lớp: @Model.MaLop</p>
+
+                    <p class="mb-1">Khóa học: @(Model.LopSinhVien?.KhoaHoc?.ToString() ?? "Chưa cập nhật")</p>
+
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <span>Tín chỉ tích lũy:</span>
+                        <span class="badge bg-dark fs-6">@tongTinChi</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white fw-bold">Điểm rèn luyện</div>
+                <table class="table mb-0">
+                    @foreach (var drl in danhSachDiemRL)
+                    {
+                        <tr>
+                            <td class="ps-3">Học kỳ @drl.IdHocKy</td>
+                            <td class="text-end pe-3 fw-bold text-success">@drl.DiemRl</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h5 class="fw-bold mb-3 text-uppercase">Lịch sử kết quả học tập</h5>
+
+            @if (Model.KetQuaHocTaps != null && Model.KetQuaHocTaps.Any())
+            {
+                var nhomKy = Model.KetQuaHocTaps
+                .GroupBy(k => k.LopHocPhan?.HocKy?.TenHocKy ?? "Kỳ khác")
+                .OrderBy(g => g.FirstOrDefault()?.LopHocPhan?.IdHocKy);
+
+                foreach (var ky in nhomKy)
+                {
+                    <div class="card mb-4 shadow-sm border-0">
+                        <div class="card-header bg-light fw-bold text-primary">@ky.Key</div>
+                        <div class="card-body p-0">
+                            <table class="table table-bordered mb-0" style="font-size: 0.85rem;">
+                                <thead class="table-light text-center small">
+                                    <tr>
+                                        <th rowspan="2" class="align-middle text-start ps-3">Môn học</th>
+                                        <th rowspan="2" class="align-middle">TC</th>
+                                        <th colspan="3">Điểm thành phần</th>
+                                        <th rowspan="2" class="align-middle">Tổng kết</th>
+                                        <th rowspan="2" class="align-middle">Kết quả</th>
+                                    </tr>
+                                    <tr>
+                                        <th>CC</th>
+                                        <th>GK</th>
+                                        <th>CK</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center align-middle">
+                                    @foreach (var mon in ky)
+                                    {
+                                        <tr>
+                                            <td class="text-start ps-3">@mon.LopHocPhan?.MonHoc?.TenMon</td>
+                                            <td>@mon.LopHocPhan?.MonHoc?.SoTinChi</td>
+                                            <td>@mon.DiemChuyenCan</td>
+                                            <td>@mon.DiemGiuaKy</td>
+                                            <td>@mon.DiemCuoiKy</td>
+                                            <td class="fw-bold text-primary">@mon.DiemTongKet</td>
+                                            <td>
+                                                @if (mon.DiemTongKet >= 5)
+                                                {
+                                                    <span class="badge bg-success">Đạt</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Rớt</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info">Chưa có dữ liệu học tập.</div>
+            }
+        </div>
+    </div>
+</div>

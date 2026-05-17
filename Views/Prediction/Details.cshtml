@@ -1,0 +1,95 @@
+﻿@model DashboardNTU.Models.Entities.DuBaoRuiRo
+
+@{
+    ViewData["Title"] = "Phân tích Chi tiết AI";
+    // Xác định màu sắc chủ đạo dựa trên rủi ro
+    var statusColor = Model.XacSuatTruot >= 70 ? "danger" : (Model.XacSuatTruot >= 40 ? "warning" : "success");
+}
+
+<div class="container mt-4">
+    <div class="mb-4">
+        <a href="@Url.Action("List")" class="btn btn-outline-primary btn-sm shadow-sm">
+            <i class="fas fa-chevron-left me-1"></i> Trở về danh sách
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center py-5">
+                    <div class="bg-@statusColor bg-opacity-10 p-4 rounded-circle d-inline-block mb-3">
+                        <i class="fas fa-user-graduate fa-4x text-@statusColor"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">MSSV: @Model.IdStudent</h3>
+                    <p class="text-muted mb-3">Học phần: <span class="badge bg-secondary">@Model.MaLhp</span></p>
+                    <div class="display-6 fw-bold text-@statusColor mt-3">@Model.NhanDuBao.ToUpper()</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 fw-bold">
+                    <i class="fas fa-brain me-2 text-primary"></i>Kết luận từ Mô hình Machine Learning
+                </div>
+                <div class="card-body py-4">
+                    <label class="form-label fw-bold">Mức độ rủi ro rớt môn:</label>
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="progress flex-grow-1" style="height: 25px;">
+                            <div class="progress-bar bg-@statusColor progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width: @Model.XacSuatTruot%">
+                                <strong>@Model.XacSuatTruot%</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded border-start border-@statusColor border-4">
+                        <h6 class="fw-bold"><i class="fas fa-search me-2"></i>Căn cứ dự báo:</h6>
+                        <p class="mb-0 text-dark">@Model.LyDoChiTiet</p>
+                        <hr>
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-clock me-1"></i> Thời điểm dự báo: @Model.NgayCapNhat.ToString("dd/MM/yyyy HH:mm:ss")
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 fw-bold">
+                    <i class="fas fa-database me-2 text-primary"></i>Dữ liệu điểm thành phần (Features)
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-borderless mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Thành phần điểm</th>
+                                <th>Giá trị ghi nhận</th>
+                                <th class="text-end pe-4">Đánh giá hệ thống</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="ps-4">Chuyên cần (Attendance)</td>
+                                <td class="fw-bold">@Model.LyDoChiTiet.Split(',').FirstOrDefault(x => x.Contains("CC"))?.Replace("Diem CC:", "").Trim()</td>
+                                <td class="text-end pe-4">
+                                    <span class="badge @(Model.XacSuatTruot > 60 ? "bg-warning text-dark" : "bg-success")">
+                                        @(Model.XacSuatTruot > 60 ? "Cảnh báo" : "Ổn định")
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="ps-4">Giữa kỳ (Midterm)</td>
+                                <td class="fw-bold">@Model.LyDoChiTiet.Split(',').LastOrDefault(x => x.Contains("GK"))?.Replace("GK:", "").Trim()</td>
+                                <td class="text-end pe-4">
+                                    <span class="badge @(Model.XacSuatTruot > 85 ? "bg-danger" : "bg-success")">
+                                        @(Model.XacSuatTruot > 85 ? "Nguy hiểm" : "Ổn định")
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
