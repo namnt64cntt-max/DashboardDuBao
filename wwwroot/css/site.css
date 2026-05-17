@@ -1,0 +1,40 @@
+<style >
+.ntu-header {
+    background-color: #154682;
+    color: white;
+    padding: 15px;
+    border-radius: 5px 5px 0 0;
+}
+
+.filter-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.table-ntu {
+    font-size: 13px;
+}
+
+    .table-ntu thead {
+        background-color: #337ab7;
+        color: white;
+        text-align: center;
+    }
+
+.semester-header {
+    background-color: #337ab7;
+    color: white;
+    padding: 5px 15px;
+    font-weight: bold;
+    display: inline-block;
+    border-radius: 5px 5px 0 0;
+}
+
+.summary-box {
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+</style >
